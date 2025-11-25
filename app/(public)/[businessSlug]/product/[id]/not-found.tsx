@@ -1,3 +1,5 @@
+'use client'
+
 // 404 Page for Product
 // When product is not found
 

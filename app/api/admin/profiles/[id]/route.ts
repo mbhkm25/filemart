@@ -7,6 +7,7 @@ import { success, error } from '@/lib/api-response'
 import { requireAdmin } from '@/lib/middleware'
 import { queryOne, query } from '@/lib/db'
 import { businessProfileUpdateSchema } from '@/lib/validations'
+import { logAdminAction, getClientIp } from '@/services/logging-service'
 import type { BusinessProfile } from '@/types/database'
 
 export async function GET(
@@ -85,7 +86,19 @@ export async function PUT(
       return error('فشل في تحديث الملف التجاري', 500)
     }
 
-    // TODO: Log admin action
+    // Log admin action
+    const clientIp = getClientIp(request)
+    const userAgent = request.headers.get('user-agent') || null
+    
+    await logAdminAction({
+      userId: authResult.user.userId,
+      action: 'update_profile',
+      resourceType: 'profile',
+      resourceId: id,
+      details: { updated_fields: Object.keys(validatedData) },
+      ipAddress: clientIp,
+      userAgent,
+    })
 
     return success(updatedProfile, 'تم تحديث الملف التجاري بنجاح')
   } catch (err: any) {

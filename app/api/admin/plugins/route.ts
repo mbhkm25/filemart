@@ -6,6 +6,7 @@ import { NextRequest } from 'next/server'
 import { success, error } from '@/lib/api-response'
 import { requireAdmin } from '@/lib/middleware'
 import { query, queryOne } from '@/lib/db'
+import { logAdminAction, getClientIp } from '@/services/logging-service'
 import type { Plugin } from '@/types/database'
 
 export async function GET(request: NextRequest) {
@@ -92,7 +93,19 @@ export async function POST(request: NextRequest) {
       return error('فشل في إنشاء الإضافة', 500)
     }
 
-    // TODO: Log admin action
+    // Log admin action
+    const clientIp = getClientIp(request)
+    const userAgent = request.headers.get('user-agent') || null
+    
+    await logAdminAction({
+      userId: authResult.user.userId,
+      action: 'create_plugin',
+      resourceType: 'plugin',
+      resourceId: plugin.id,
+      details: { plugin_key: plugin_key, name, version },
+      ipAddress: clientIp,
+      userAgent,
+    })
 
     return success(plugin, 'تم إنشاء الإضافة بنجاح')
   } catch (err: any) {

@@ -6,6 +6,7 @@ import { NextRequest } from 'next/server'
 import { success, error } from '@/lib/api-response'
 import { requireAdmin } from '@/lib/middleware'
 import { queryOne, query } from '@/lib/db'
+import { logAdminAction, getClientIp } from '@/services/logging-service'
 import type { Plugin } from '@/types/database'
 
 export async function PUT(
@@ -84,7 +85,19 @@ export async function PUT(
       return error('فشل في تحديث الإضافة', 500)
     }
 
-    // TODO: Log admin action
+    // Log admin action
+    const clientIp = getClientIp(request)
+    const userAgent = request.headers.get('user-agent') || null
+    
+    await logAdminAction({
+      userId: authResult.user.userId,
+      action: 'update_plugin',
+      resourceType: 'plugin',
+      resourceId: id,
+      details: { updated_fields: Object.keys(body) },
+      ipAddress: clientIp,
+      userAgent,
+    })
 
     return success(updatedPlugin, 'تم تحديث الإضافة بنجاح')
   } catch (err: any) {
@@ -116,10 +129,25 @@ export async function DELETE(
       return error(`لا يمكن حذف الإضافة لأنها مثبتة لدى ${installCount} تاجر`, 400)
     }
 
+    // Get plugin info before deletion for logging
+    const plugin = await queryOne<Plugin>(`SELECT plugin_key, name FROM plugins WHERE id = $1`, [id])
+
     // Delete plugin
     await query(`DELETE FROM plugins WHERE id = $1`, [id])
 
-    // TODO: Log admin action
+    // Log admin action
+    const clientIp = getClientIp(request)
+    const userAgent = request.headers.get('user-agent') || null
+    
+    await logAdminAction({
+      userId: authResult.user.userId,
+      action: 'delete_plugin',
+      resourceType: 'plugin',
+      resourceId: id,
+      details: { plugin_key: plugin?.plugin_key, name: plugin?.name },
+      ipAddress: clientIp,
+      userAgent,
+    })
 
     return success(null, 'تم حذف الإضافة بنجاح')
   } catch (err: any) {

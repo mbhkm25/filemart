@@ -1,8 +1,16 @@
+// Landing Page
+// Main landing page with hero section and features
+
+import LandingHeader from '@/components/public/LandingHeader'
+import LandingHero from '@/components/public/LandingHero'
+import FeaturesSection from '@/components/public/FeaturesSection'
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold">FileMart</h1>
-      <p className="mt-4 text-lg">منصة إنشاء الملفات التجارية</p>
+    <main className="min-h-screen">
+      <LandingHeader />
+      <LandingHero />
+      <FeaturesSection />
     </main>
   )
 }

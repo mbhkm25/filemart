@@ -1,3 +1,5 @@
+'use client'
+
 // Button Component
 // Fully implemented with all states per FIS.md
 

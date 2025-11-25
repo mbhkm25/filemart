@@ -64,13 +64,34 @@ export function extractTokenFromHeader(
 }
 
 /**
- * Get user from request headers
+ * Get user from request headers or cookies
  */
 export function getUserFromRequest(
-  headers: Headers
+  headers: Headers | HeadersInit
 ): JWTPayload | null {
-  const authHeader = headers.get('authorization')
-  const token = extractTokenFromHeader(authHeader)
+  // Try to get token from Authorization header first
+  const authHeader = headers instanceof Headers 
+    ? headers.get('authorization')
+    : (headers as Record<string, string>)['authorization']
+  
+  let token = extractTokenFromHeader(authHeader)
+  
+  // If no token in header, try to get from cookie
+  if (!token) {
+    const cookieHeader = headers instanceof Headers
+      ? headers.get('cookie')
+      : (headers as Record<string, string>)['cookie']
+    
+    if (cookieHeader) {
+      const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+        const [key, value] = cookie.trim().split('=')
+        acc[key] = value
+        return acc
+      }, {} as Record<string, string>)
+      
+      token = cookies['token'] || null
+    }
+  }
   
   if (!token) {
     return null

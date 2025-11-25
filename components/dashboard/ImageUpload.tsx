@@ -51,24 +51,26 @@ export default function ImageUpload({
   }
 
   const uploadToCloudinary = async (file: File): Promise<string> => {
+    // Use API route for upload instead of direct Cloudinary upload
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'filemart')
 
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: 'POST',
-        body: formData,
-      }
-    )
+    const response = await fetch('/api/upload/image', {
+      method: 'POST',
+      body: formData,
+    })
 
     if (!response.ok) {
-      throw new Error('فشل في رفع الصورة')
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || 'فشل في رفع الصورة')
     }
 
     const data = await response.json()
-    return data.secure_url
+    if (!data.success || !data.data?.url) {
+      throw new Error(data.error || 'فشل في رفع الصورة')
+    }
+
+    return data.data.url
   }
 
   const handleFile = useCallback(
@@ -201,10 +203,10 @@ export default function ImageUpload({
             <p className="text-xs text-gray-500 mb-4">
               الحد الأقصى {maxSize}MB • {currentImages}/{maxImages} صورة
             </p>
-            <label>
-              <Button variant="outline" size="sm" asChild>
-                <span>اختر صورة</span>
-              </Button>
+            <label className="cursor-pointer inline-block">
+              <span className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium rounded-lg border-2 border-primary-600 text-primary-600 bg-transparent hover:bg-primary-50 hover:shadow-sm active:bg-primary-100 active:scale-[0.98] transition-all duration-150">
+                اختر صورة
+              </span>
               <input
                 type="file"
                 accept="image/*"

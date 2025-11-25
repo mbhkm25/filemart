@@ -48,8 +48,27 @@ export default function SettingsClient({ merchant }: SettingsClientProps) {
   const handleSaveAccount = async () => {
     setIsSaving(true)
     try {
-      // TODO: Implement account update API
+      const response = await fetch('/api/merchant/account', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(accountData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'فشل في تحديث الحساب')
+      }
+
       showToast('success', 'تم تحديث الحساب بنجاح')
+      setAccountData((prev) => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      }))
     } catch (error: any) {
       showToast('error', error.message || 'فشل في تحديث الحساب')
     } finally {
@@ -60,7 +79,20 @@ export default function SettingsClient({ merchant }: SettingsClientProps) {
   const handleSaveNotifications = async () => {
     setIsSaving(true)
     try {
-      // TODO: Implement notifications update API
+      const response = await fetch('/api/merchant/notifications', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(notifications),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'فشل في تحديث الإشعارات')
+      }
+
       showToast('success', 'تم تحديث إعدادات الإشعارات')
     } catch (error: any) {
       showToast('error', error.message || 'فشل في تحديث الإشعارات')
@@ -84,8 +116,26 @@ export default function SettingsClient({ merchant }: SettingsClientProps) {
   const handleDeleteAccount = async () => {
     setIsDeleting(true)
     try {
-      // TODO: Implement delete account API
+      const response = await fetch('/api/merchant/delete-account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: accountData.currentPassword,
+          confirm: true,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'فشل في حذف الحساب')
+      }
+
       showToast('success', 'تم حذف الحساب بنجاح')
+      // Clear token and redirect
+      document.cookie = 'token=; path=/; max-age=0'
       router.push('/login')
     } catch (error: any) {
       showToast('error', error.message || 'فشل في حذف الحساب')

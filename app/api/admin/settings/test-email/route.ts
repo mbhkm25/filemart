@@ -4,6 +4,7 @@
 import { NextRequest } from 'next/server'
 import { success, error } from '@/lib/api-response'
 import { requireAdmin } from '@/lib/middleware'
+import { sendTestEmail } from '@/services/email-service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,9 +20,18 @@ export async function POST(request: NextRequest) {
       return error('البريد الإلكتروني مطلوب', 400)
     }
 
-    // TODO: Implement email sending using SMTP settings
-    // For now, just return success
-    // In production, use nodemailer or similar
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(to)) {
+      return error('البريد الإلكتروني غير صحيح', 400)
+    }
+
+    // Send test email
+    const sent = await sendTestEmail(to)
+
+    if (!sent) {
+      return error('فشل في إرسال البريد التجريبي. يرجى التحقق من إعدادات SMTP', 500)
+    }
 
     return success(null, 'تم إرسال البريد التجريبي بنجاح')
   } catch (err: any) {

@@ -1,18 +1,24 @@
 // PluginWidget Component
 // Dynamic widget rendering with error boundary
+// Follows DFD Section 10: Public Widget Rendering
 
 'use client'
 
-import { Component, ErrorInfo, ReactNode } from 'react'
+import { Component, ErrorInfo, ReactNode, useState, useEffect } from 'react'
 import Card from '@/components/common/Card'
+import Skeleton from '@/components/common/Skeleton'
+import type { PluginWidgetProps as BasePluginWidgetProps } from '@/types/plugin'
 
-interface PluginWidgetProps {
+interface PluginWidgetProps extends BasePluginWidgetProps {
   pluginKey: string
-  config?: Record<string, any>
+  installationId: string
+  merchantId: string
+  profileId: string
 }
 
 interface ErrorBoundaryState {
   hasError: boolean
+  error?: Error
 }
 
 class PluginErrorBoundary extends Component<
@@ -24,17 +30,20 @@ class PluginErrorBoundary extends Component<
     this.state = { hasError: false }
   }
 
-  static getDerivedStateFromError(): ErrorBoundaryState {
-    return { hasError: true }
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error }
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error(`Plugin ${this.props.pluginKey} error:`, error, errorInfo)
+    // In production, this could log to an error tracking service
   }
 
   render() {
     if (this.state.hasError) {
-      return null // Fail silently - don't show broken plugins
+      // Fail silently - don't show broken plugins in public view
+      // This follows FIS: Plugin widgets should not break the page
+      return null
     }
 
     return this.props.children
@@ -44,21 +53,72 @@ class PluginErrorBoundary extends Component<
 export default function PluginWidget({
   pluginKey,
   config,
+  installationId,
+  merchantId,
+  profileId,
 }: PluginWidgetProps) {
-  // Try to load plugin component dynamically
-  let PluginComponent: React.ComponentType<{ config?: Record<string, any> }> | null = null
+  const [PluginComponent, setPluginComponent] = useState<React.ComponentType<any> | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<Error | null>(null)
 
-  try {
-    // Dynamic import of plugin widget
-    // This will be implemented when plugins are available
-    // For now, return null to not break the UI
-    PluginComponent = null
-  } catch (error) {
-    console.error(`Failed to load plugin ${pluginKey}:`, error)
+  useEffect(() => {
+    let mounted = true
+
+    async function loadWidget() {
+      try {
+        setIsLoading(true)
+        setLoadError(null)
+
+        // Load widget using plugin loader
+        // In production, this would call an API endpoint that uses pluginLoader
+        // For now, we'll use a client-side approach
+        const response = await fetch(
+          `/api/public/plugins/${installationId}/widget?merchantId=${merchantId}&profileId=${profileId}`
+        )
+
+        if (!response.ok) {
+          throw new Error('Failed to load plugin widget')
+        }
+
+        // The API would return the component or component data
+        // For now, we'll handle the case where plugins aren't fully implemented
+        // This is a placeholder that will be replaced when plugins are available
+        
+        // In production, the response would contain the component module
+        // and we would dynamically import it here
+        
+        if (mounted) {
+          setPluginComponent(null) // Will be set when plugins are available
+          setIsLoading(false)
+        }
+      } catch (error) {
+        if (mounted) {
+          setLoadError(error as Error)
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadWidget()
+
+    return () => {
+      mounted = false
+    }
+  }, [pluginKey, installationId, merchantId, profileId])
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Card className="w-full">
+        <Skeleton className="h-32" />
+      </Card>
+    )
   }
 
-  // If plugin component is not available, return null (don't render anything)
-  if (!PluginComponent) {
+  // Show error state (silently fail)
+  if (loadError || !PluginComponent) {
+    // Fail silently - don't show broken plugins
+    // This follows FIS: Plugin widgets should not break the page
     return null
   }
 

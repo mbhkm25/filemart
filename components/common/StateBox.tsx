@@ -1,3 +1,5 @@
+'use client'
+
 // StateBox Component
 // Fully implemented for Empty, Error, Offline states per FIS.md
 

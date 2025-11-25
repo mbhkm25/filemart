@@ -14,3 +14,26 @@
   }
 }
 
+@keyframes gradient-pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-gradient-pulse-1 {
+  animation: gradient-pulse 4s ease-in-out infinite;
+}
+
+.animate-gradient-pulse-2 {
+  animation: gradient-pulse 4s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-gradient-pulse-3 {
+  animation: gradient-pulse 4s ease-in-out infinite;
+  animation-delay: 2s;
+}
+

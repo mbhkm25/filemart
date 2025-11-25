@@ -3,8 +3,8 @@
 
 import { NextRequest } from 'next/server'
 import { success, error, notFound } from '@/lib/api-response'
-import { queryOne } from '@/lib/db'
-import type { BusinessProfile, Product, GalleryImage } from '@/types/database'
+import { queryOne, query } from '@/lib/db'
+import type { BusinessProfile, Product, GalleryImage, InstalledPlugin, Plugin } from '@/types/database'
 
 export async function GET(
   request: NextRequest,
@@ -35,8 +35,33 @@ export async function GET(
       [profile.id]
     )
 
-    // TODO: Fetch installed plugins with public widgets
-    // const installedPlugins = await query(...)
+    // Fetch installed plugins with public widgets
+    const installedPlugins = await query<
+      InstalledPlugin & {
+        plugin_key: string
+        public_widget_path: string | null
+        settings_json: any
+      }
+    >(
+      `SELECT 
+        ip.id,
+        ip.merchant_id,
+        ip.plugin_id,
+        ip.is_active,
+        p.plugin_key,
+        p.public_widget_path,
+        ps.settings_json
+      FROM installed_plugins ip
+      JOIN plugins p ON ip.plugin_id = p.id
+      LEFT JOIN plugin_settings ps ON ip.id = ps.installed_plugin_id
+      WHERE ip.merchant_id = $1 
+        AND ip.is_active = true 
+        AND p.is_active = true
+        AND p.public_widget_path IS NOT NULL
+        AND p.public_widget_path != ''
+      ORDER BY ip.created_at ASC`,
+      [profile.merchant_id]
+    )
 
     return success({
       profile: {
@@ -69,7 +94,14 @@ export async function GET(
         thumbnail_url: img.thumbnail_url,
         alt_text: img.alt_text,
       })),
-      plugins: [], // TODO: Implement plugin widgets
+      plugins: installedPlugins.map((plugin) => ({
+        id: plugin.id,
+        plugin_key: plugin.plugin_key,
+        installation_id: plugin.id,
+        merchant_id: plugin.merchant_id,
+        profile_id: profile.id,
+        settings: plugin.settings_json || {},
+      })),
     })
   } catch (err) {
     console.error('Error fetching public profile:', err)

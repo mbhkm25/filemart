@@ -14,7 +14,23 @@ export type AuthResult =
  * Verifies JWT token and returns user or error response
  */
 export function requireAuth(request: NextRequest): AuthResult {
-  const user = getUserFromRequest(request.headers)
+  // Try to get token from cookies first (Next.js default)
+  const cookies = request.cookies
+  const tokenFromCookie = cookies.get('token')?.value
+  
+  // Also try from Authorization header
+  const authHeader = request.headers.get('authorization')
+  
+  // Create headers object for getUserFromRequest
+  const headers = new Headers()
+  if (authHeader) {
+    headers.set('authorization', authHeader)
+  }
+  if (tokenFromCookie) {
+    headers.set('cookie', `token=${tokenFromCookie}`)
+  }
+  
+  const user = getUserFromRequest(headers)
   
   if (!user) {
     return { success: false, response: unauthorized('يجب تسجيل الدخول') }

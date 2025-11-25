@@ -81,3 +81,47 @@ export const registerSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerSchema>
 
+// Plugin Manifest Validation
+export const pluginManifestSchema = z.object({
+  plugin_key: z.string().min(1, 'معرف الإضافة مطلوب').max(100),
+  name: z.string().min(1, 'اسم الإضافة مطلوب').max(255),
+  description: z.string().max(2000).optional(),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'صيغة الإصدار غير صحيحة (يجب أن تكون x.y.z)'),
+  author: z.string().max(255).optional(),
+  type: z.enum(['widget', 'dashboard_module', 'backend_handler', 'mixed']),
+  public_widget_path: z.string().max(255).optional(),
+  dashboard_settings_path: z.string().max(255).optional(),
+  backend_handler_path: z.string().max(255).optional(),
+  config_schema_json: z.record(z.any()).optional(),
+  hooks: z.object({
+    onInstall: z.string().optional(),
+    onUninstall: z.string().optional(),
+    onActivate: z.string().optional(),
+    onDeactivate: z.string().optional(),
+    onInit: z.string().optional(),
+  }).optional(),
+  permissions: z.array(z.string()).optional(),
+  requirements: z.object({
+    min_version: z.string().optional(),
+    dependencies: z.array(z.string()).optional(),
+  }).optional(),
+  is_premium: z.boolean().optional(),
+  price: z.number().min(0).optional(),
+  changelog: z.string().optional(),
+})
+
+export type PluginManifestInput = z.infer<typeof pluginManifestSchema>
+
+// Plugin Config Validation (validated against config_schema_json at runtime)
+export const pluginConfigSchema = z.record(z.any())
+
+export type PluginConfigInput = z.infer<typeof pluginConfigSchema>
+
+// Plugin Update Validation
+export const pluginUpdateSchema = z.object({
+  settings: z.record(z.any()).optional(),
+  is_active: z.boolean().optional(),
+})
+
+export type PluginUpdateInput = z.infer<typeof pluginUpdateSchema>
+

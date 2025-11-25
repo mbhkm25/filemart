@@ -101,8 +101,6 @@ export async function PUT(request: NextRequest) {
     updateFields.push(`updated_at = NOW()`)
     updateValues.push(existingProfile.id)
 
-    // TODO: Calculate completion_percentage based on filled fields
-
     const updateQuery = `
       UPDATE business_profiles 
       SET ${updateFields.join(', ')}
@@ -118,6 +116,26 @@ export async function PUT(request: NextRequest) {
     if (!updatedProfile) {
       return error('فشل في تحديث الملف التجاري', 500)
     }
+
+    // Calculate completion_percentage based on updated fields
+    const completionFields = [
+      updatedProfile.name ? 1 : 0,
+      updatedProfile.description ? 1 : 0,
+      updatedProfile.logo_url ? 1 : 0,
+      updatedProfile.cover_url ? 1 : 0,
+      updatedProfile.category ? 1 : 0,
+      updatedProfile.address ? 1 : 0,
+      updatedProfile.city ? 1 : 0,
+      updatedProfile.working_hours && Object.keys(updatedProfile.working_hours).length > 0 ? 1 : 0,
+      updatedProfile.contact_links && Object.keys(updatedProfile.contact_links).length > 0 ? 1 : 0,
+    ]
+    const completionPercentage = Math.round((completionFields.reduce((a, b) => a + b, 0) / completionFields.length) * 100)
+
+    // Update completion_percentage
+    await query(
+      `UPDATE business_profiles SET completion_percentage = $1 WHERE id = $2`,
+      [completionPercentage, updatedProfile.id]
+    )
 
     return success({
       id: updatedProfile.id,

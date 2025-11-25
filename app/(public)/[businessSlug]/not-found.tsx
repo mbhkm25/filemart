@@ -1,3 +1,5 @@
+'use client'
+
 // 404 Page for Business Profile
 // When business slug is not found
 

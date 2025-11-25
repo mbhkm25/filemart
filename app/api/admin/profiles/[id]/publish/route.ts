@@ -5,6 +5,7 @@ import { NextRequest } from 'next/server'
 import { success, error } from '@/lib/api-response'
 import { requireAdmin } from '@/lib/middleware'
 import { queryOne, query } from '@/lib/db'
+import { logAdminAction, getClientIp } from '@/services/logging-service'
 import type { BusinessProfile } from '@/types/database'
 
 export async function PUT(
@@ -40,7 +41,19 @@ export async function PUT(
       [is_published, id]
     )
 
-    // TODO: Log admin action
+    // Log admin action
+    const clientIp = getClientIp(request)
+    const userAgent = request.headers.get('user-agent') || null
+    
+    await logAdminAction({
+      userId: authResult.user.userId,
+      action: is_published ? 'publish_profile' : 'unpublish_profile',
+      resourceType: 'profile',
+      resourceId: id,
+      details: { is_published, profile_name: profile.name },
+      ipAddress: clientIp,
+      userAgent,
+    })
 
     return success({ is_published }, 'تم تحديث حالة النشر بنجاح')
   } catch (err: any) {

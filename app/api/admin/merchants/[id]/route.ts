@@ -6,6 +6,7 @@ import { NextRequest } from 'next/server'
 import { success, error } from '@/lib/api-response'
 import { requireAdmin } from '@/lib/middleware'
 import { queryOne, query } from '@/lib/db'
+import { logAdminAction, getClientIp } from '@/services/logging-service'
 import type { Merchant, BusinessProfile, Order } from '@/types/database'
 
 export async function GET(
@@ -85,10 +86,25 @@ export async function DELETE(
 
     const { id } = await params
 
+    // Get merchant info before deletion for logging
+    const merchant = await queryOne<Merchant>(`SELECT name, email FROM merchants WHERE id = $1`, [id])
+
     // Soft delete (set is_active to false)
     await query(`UPDATE merchants SET is_active = false, updated_at = NOW() WHERE id = $1`, [id])
 
-    // TODO: Log admin action
+    // Log admin action
+    const clientIp = getClientIp(request)
+    const userAgent = request.headers.get('user-agent') || null
+    
+    await logAdminAction({
+      userId: authResult.user.userId,
+      action: 'delete_merchant',
+      resourceType: 'merchant',
+      resourceId: id,
+      details: { name: merchant?.name, email: merchant?.email },
+      ipAddress: clientIp,
+      userAgent,
+    })
 
     return success(null, 'تم حذف التاجر بنجاح')
   } catch (err: any) {

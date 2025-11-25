@@ -78,13 +78,16 @@ export default async function PublicBusinessProfilePage({
   }
 
   // Fetch all data in parallel
-  const [products, galleryImages] = await Promise.all([
+  const [products, galleryImages, installedPluginsData] = await Promise.all([
     getProducts(profile.id),
     getGalleryImages(profile.id),
+    fetch(`/api/public/profile/${businessSlug}`)
+      .then((res) => res.json())
+      .then((data) => (data.success ? data.data.plugins : []))
+      .catch(() => []),
   ])
 
-  // TODO: Fetch installed plugins with public widgets
-  const installedPlugins: any[] = []
+  const installedPlugins = installedPluginsData || []
 
   return (
     <CartProvider profileId={profile.id}>
@@ -158,9 +161,12 @@ export default async function PublicBusinessProfilePage({
           <section className="mb-8 md:mb-12 space-y-6">
             {installedPlugins.map((plugin) => (
               <PluginWidget
-                key={plugin.plugin_key}
+                key={plugin.id}
                 pluginKey={plugin.plugin_key}
                 config={plugin.settings}
+                installationId={plugin.id}
+                merchantId={plugin.merchant_id}
+                profileId={plugin.profile_id}
               />
             ))}
           </section>

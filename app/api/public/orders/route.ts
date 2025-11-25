@@ -5,7 +5,8 @@ import { NextRequest } from 'next/server'
 import { success, error } from '@/lib/api-response'
 import { queryOne, query, transaction } from '@/lib/db'
 import { orderCreateSchema } from '@/lib/validations'
-import type { BusinessProfile, Product, Order, OrderItem } from '@/types/database'
+import { sendOrderNotification } from '@/services/email-service'
+import type { BusinessProfile, Product, Order, OrderItem, Merchant } from '@/types/database'
 
 export async function POST(request: NextRequest) {
   try {
@@ -107,8 +108,55 @@ export async function POST(request: NextRequest) {
       return order.id
     })
 
-    // TODO: Send notification to merchant (Email/Push)
-    // await notifyMerchant(orderId, validatedData.profile_id)
+    // Send email notification to merchant (async, don't block response)
+    ;(async () => {
+      try {
+        // Get merchant email
+        const merchant = await queryOne<Merchant>(
+          `SELECT m.email FROM merchants m
+           JOIN business_profiles bp ON m.id = bp.merchant_id
+           WHERE bp.id = $1`,
+          [validatedData.profile_id]
+        )
+
+        if (merchant?.email) {
+          // Get order details for email
+          const orderDetails = await queryOne<Order>(
+            `SELECT * FROM orders WHERE id = $1`,
+            [orderId]
+          )
+
+          const orderItems = await query<OrderItem & { product_name: string }>(
+            `SELECT oi.*, p.name as product_name
+             FROM order_items oi
+             JOIN products p ON oi.product_id = p.id
+             WHERE oi.order_id = $1`,
+            [orderId]
+          )
+
+          if (orderDetails) {
+            await sendOrderNotification(merchant.email, {
+              id: orderId,
+              total: totalAmount,
+              items: orderItems.map((item) => ({
+                name: item.product_name,
+                quantity: item.quantity,
+                price: Number(item.unit_price),
+              })),
+              client: {
+                name: validatedData.client.name,
+                phone: validatedData.client.phone,
+                email: validatedData.client.email,
+              },
+              notes: validatedData.notes,
+            })
+          }
+        }
+      } catch (emailError) {
+        // Log error but don't fail the order creation
+        console.error('Error sending order notification email:', emailError)
+      }
+    })()
 
     return success(
       {

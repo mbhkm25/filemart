@@ -5,6 +5,7 @@ import { NextRequest } from 'next/server'
 import { success, error } from '@/lib/api-response'
 import { requireAdmin } from '@/lib/middleware'
 import { queryOne, query } from '@/lib/db'
+import { logAdminAction, getClientIp } from '@/services/logging-service'
 import type { Merchant } from '@/types/database'
 
 export async function PUT(
@@ -43,7 +44,19 @@ export async function PUT(
       [is_active, id]
     )
 
-    // TODO: Log admin action
+    // Log admin action
+    const clientIp = getClientIp(request)
+    const userAgent = request.headers.get('user-agent') || null
+    
+    await logAdminAction({
+      userId: authResult.user.userId,
+      action: is_active ? 'activate_merchant' : 'deactivate_merchant',
+      resourceType: 'merchant',
+      resourceId: id,
+      details: { is_active, merchant_name: merchant.name, merchant_email: merchant.email },
+      ipAddress: clientIp,
+      userAgent,
+    })
 
     return success({ is_active }, 'تم تحديث حالة التاجر بنجاح')
   } catch (err: any) {
