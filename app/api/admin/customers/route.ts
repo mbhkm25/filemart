@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         client_name,
         COUNT(*)::text as orders_count,
         MAX(created_at) as last_order_date,
-        SUM((SELECT SUM(price_at_order * quantity) FROM order_items WHERE order_id = o.id))::text as total_spent
+        SUM((SELECT SUM(unit_price * quantity) FROM order_items WHERE order_id = o.id))::text as total_spent
       FROM orders o
       WHERE client_phone IS NOT NULL
     `

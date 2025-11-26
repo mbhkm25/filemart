@@ -41,7 +41,7 @@ export default function OrderDetailsClient({
   const [isUpdating, setIsUpdating] = useState(false)
 
   const total = items.reduce(
-    (sum, item) => sum + Number(item.price_at_order) * item.quantity,
+    (sum, item) => sum + Number(item.unit_price) * item.quantity,
     0
   )
 
@@ -176,14 +176,14 @@ export default function OrderDetailsClient({
                         {new Intl.NumberFormat('ar-SA', {
                           style: 'currency',
                           currency: 'SAR',
-                        }).format(Number(item.price_at_order))}
+                        }).format(Number(item.unit_price))}
                       </p>
                     </div>
                     <p className="font-semibold text-gray-900">
                       {new Intl.NumberFormat('ar-SA', {
                         style: 'currency',
                         currency: 'SAR',
-                      }).format(Number(item.price_at_order) * item.quantity)}
+                      }).format(Number(item.unit_price) * item.quantity)}
                     </p>
                   </div>
                 ))}

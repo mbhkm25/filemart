@@ -179,14 +179,14 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
                   {new Intl.NumberFormat('ar-SA', {
                     style: 'currency',
                     currency: 'SAR',
-                  }).format(Number(item.price_at_order))}
+                  }).format(Number(item.unit_price))}
                 </p>
               </div>
               <p className="font-semibold text-gray-900">
                 {new Intl.NumberFormat('ar-SA', {
                   style: 'currency',
                   currency: 'SAR',
-                }).format(Number(item.price_at_order) * item.quantity)}
+                }).format(Number(item.unit_price) * item.quantity)}
               </p>
             </div>
           ))}

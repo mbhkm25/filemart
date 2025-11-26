@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 
         // Calculate total
         const total = items.reduce(
-          (sum, item) => sum + Number(item.price_at_order) * item.quantity,
+          (sum, item) => sum + Number(item.unit_price) * item.quantity,
           0
         )
 

@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
         )
 
         const total = items.reduce(
-          (sum: number, item: any) => sum + Number(item.price_at_order) * item.quantity,
+          (sum: number, item: any) => sum + Number(item.unit_price) * item.quantity,
           0
         )
 
