@@ -166,8 +166,8 @@ export default async function PublicBusinessProfilePage({
                 pluginKey={plugin.pluginKey}
                 config={plugin.settings}
                 installationId={plugin.id}
-                merchantId={plugin.merchant_id}
-                profileId={plugin.profile_id}
+                merchantId={plugin.merchantId}
+                profileId={plugin.profileId}
               />
             ))}
           </section>
