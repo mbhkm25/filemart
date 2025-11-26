@@ -151,7 +151,7 @@ export default function ProductRow({
         title="تأكيد الحذف"
       >
         <p className="text-gray-600 mb-4">
-          هل أنت متأكد من رغبتك في حذف المنتج "{product.name}"؟ لا يمكن التراجع عن هذه العملية.
+          هل أنت متأكد من رغبتك في حذف المنتج &quot;{product.name}&quot;؟ لا يمكن التراجع عن هذه العملية.
         </p>
         <div className="flex gap-2 justify-end">
           <Button
