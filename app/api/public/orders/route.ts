@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
                 phone: validatedData.client.phone,
                 email: validatedData.client.email,
               },
-              notes: validatedData.notes,
+              notes: validatedData.notes ?? undefined,
             })
           }
         }

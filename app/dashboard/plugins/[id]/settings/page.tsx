@@ -18,8 +18,12 @@ async function getPluginSettings(installationId: string, userId: string) {
     return null
   }
 
-  const installed = await queryOne<InstalledPlugin>(
-    `SELECT * FROM installed_plugins WHERE id = $1 AND profile_id = $2`,
+  const installed = await queryOne<InstalledPlugin & { plugin_key: string; settings: any }>(
+    `SELECT ip.*, p.plugin_key, ps.settings_json as settings
+     FROM installed_plugins ip
+     JOIN plugins p ON ip.plugin_id = p.id
+     LEFT JOIN plugin_settings ps ON ip.id = ps.installed_plugin_id
+     WHERE ip.id = $1 AND ip.profile_id = $2`,
     [installationId, profile.id]
   )
 
@@ -31,6 +35,10 @@ async function getPluginSettings(installationId: string, userId: string) {
     `SELECT * FROM plugins WHERE plugin_key = $1`,
     [installed.plugin_key]
   )
+
+  if (!plugin) {
+    return null
+  }
 
   return { installed, plugin }
 }

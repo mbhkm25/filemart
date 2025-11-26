@@ -1,6 +1,6 @@
 // Authentication Utilities (JWT)
 
-import jwt from 'jsonwebtoken'
+import jwt, { SignOptions, Secret } from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import type { UserRole } from '@/types/database'
 
@@ -34,9 +34,9 @@ export async function verifyPassword(
  * Create a JWT token
  */
 export function createToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  })
+  // Cast options to any to satisfy jsonwebtoken type overloads at compile time
+  const options = { expiresIn: JWT_EXPIRES_IN } as any
+  return jwt.sign(payload, JWT_SECRET as Secret, options)
 }
 
 /**

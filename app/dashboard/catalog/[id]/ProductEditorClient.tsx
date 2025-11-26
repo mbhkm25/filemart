@@ -84,7 +84,7 @@ export default function ProductEditorClient({
     }
   }
 
-  const handleImageUpload = (url: string) => {
+  const handleImageUpload = async (url: string): Promise<void> => {
     setFormData({
       ...formData,
       images: [...formData.images, url],

@@ -17,7 +17,7 @@ export interface PluginBoxProps {
     description?: string | null
     version: string
     is_premium: boolean
-    price: number
+    price: number | null
   }
   isInstalled: boolean
   isActive?: boolean

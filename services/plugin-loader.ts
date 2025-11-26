@@ -2,7 +2,7 @@
 // Dynamically loads plugin components (widgets, settings, handlers)
 
 import type { ComponentType } from 'react'
-import { queryOne } from '@/lib/db'
+import { queryOne, query } from '@/lib/db'
 import { pluginRegistry } from '@/lib/plugin-registry'
 import { pluginSandbox } from '@/lib/plugin-sandbox'
 import { getPluginPath, hasPublicWidget, hasDashboardSettings, hasBackendHandler } from '@/lib/plugin-utils'
@@ -269,7 +269,7 @@ export class PluginLoader {
     type: 'widget' | 'settings',
     path: string,
     context: PluginContext
-  ): Promise<ComponentType<any> | null> {
+  ): Promise<ComponentType<any> | undefined> {
     try {
       // In production, this would be:
       // const module = await import(path)
@@ -279,7 +279,7 @@ export class PluginLoader {
       // The actual implementation would load from the plugins directory
       // This is a safe fallback that prevents errors
       
-      return null // Will be implemented when plugins are available
+        return undefined // Will be implemented when plugins are available
     } catch (error) {
       throw new Error(`Failed to load ${type} component for plugin ${pluginKey}: ${(error as Error).message}`)
     }
@@ -299,7 +299,7 @@ export class PluginLoader {
       // return module.default || module
 
       // For now, return a placeholder
-      return null
+        return undefined
     } catch (error) {
       throw new Error(`Failed to load handler for plugin ${pluginKey}: ${(error as Error).message}`)
     }

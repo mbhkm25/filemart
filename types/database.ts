@@ -16,6 +16,8 @@ export interface Merchant {
   is_active: boolean
   email_verified: boolean
   phone_verified: boolean
+  email_notifications?: boolean
+  push_notifications?: boolean
   created_at: Date
   updated_at: Date
 }
@@ -146,6 +148,7 @@ export interface SystemLog {
   action: string
   resource_type: string | null
   resource_id: string | null
+  description?: string | null
   details: Record<string, any>
   ip_address: string | null
   user_agent: string | null

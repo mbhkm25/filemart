@@ -88,7 +88,7 @@ export class PluginManager {
       }
 
       // 7. Create default settings
-      const defaultSettings = sanitizePluginConfig({}, {})
+      const defaultSettings = sanitizePluginConfig({})
       await query(
         `INSERT INTO plugin_settings (installed_plugin_id, settings_json)
          VALUES ($1, $2)`,
