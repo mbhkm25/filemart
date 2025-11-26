@@ -163,14 +163,11 @@ export default async function PublicBusinessProfilePage({
             {installedPlugins.map((plugin: InstalledPluginInfo) => (
               <PluginWidget
                 key={plugin.id}
+                pluginKey={plugin.pluginKey}
+                installationId={plugin.id}
+                merchantId={plugin.merchantId}
+                profileId={profile.id}
                 config={plugin.settings}
-                context={{
-                  merchantId: plugin.merchantId,
-                  profileId: profile.id,
-                  installationId: plugin.id,
-                  pluginKey: plugin.pluginKey,
-                  config: plugin.settings,
-                }}
               />
             ))}
           </section>
