@@ -1,6 +1,7 @@
 // Businesses Listing Page
 // Public page to browse all published business profiles
 
+import React, { Suspense } from 'react'
 import BusinessesListClient from './BusinessesListClient'
 
 export const metadata = {
@@ -9,6 +10,10 @@ export const metadata = {
 }
 
 export default function BusinessesPage() {
-  return <BusinessesListClient />
+  return (
+    <Suspense fallback={<div />}> 
+      <BusinessesListClient />
+    </Suspense>
+  )
 }
 

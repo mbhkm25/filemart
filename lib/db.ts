@@ -9,20 +9,28 @@ if (typeof globalThis.WebSocket === 'undefined') {
   neonConfig.webSocketConstructor = ws
 }
 
-// Get database URL from environment
+// Get database URL from environment (may be undefined during build)
 const databaseUrl = process.env.DATABASE_URL
 
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL environment variable is not set')
+// Create connection pool lazily to avoid throwing during module import
+let pool: Pool | null = null
+let sql: ReturnType<typeof neon> | null = null
+
+function ensureDbInitialized() {
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL environment variable is not set')
+  }
+
+  if (!pool) {
+    pool = new Pool({ connectionString: databaseUrl })
+  }
+
+  if (!sql) {
+    sql = neon(databaseUrl)
+  }
+
+  return { pool, sql }
 }
-
-// Create connection pool
-export const pool = new Pool({
-  connectionString: databaseUrl,
-})
-
-// SQL client for direct queries
-export const sql = neon(databaseUrl)
 
 // Helper function to execute queries with error handling
 export async function query<T = any>(
@@ -30,7 +38,8 @@ export async function query<T = any>(
   params?: any[]
 ): Promise<T[]> {
   try {
-    const result = await pool.query(queryText, params)
+    const { pool: p } = ensureDbInitialized()
+    const result = await p.query(queryText, params)
     return result.rows as T[]
   } catch (error) {
     console.error('Database query error:', error)
@@ -51,7 +60,8 @@ export async function queryOne<T = any>(
 export async function transaction<T>(
   callback: (client: any) => Promise<T>
 ): Promise<T> {
-  const client = await pool.connect()
+  const { pool: p } = ensureDbInitialized()
+  const client = await p.connect()
   try {
     await client.query('BEGIN')
     const result = await callback(client)
@@ -67,6 +77,8 @@ export async function transaction<T>(
 
 // Close pool (for cleanup)
 export async function closePool() {
-  await pool.end()
+  if (pool) {
+    await pool.end()
+  }
 }
 
