@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     // Create order in transaction
     const orderId = await transaction(async (client) => {
       // Insert order
-      const orderResult = await client.query<Order>(
+      const orderResult = await client.query(
         `INSERT INTO orders (
           profile_id, client_name, client_phone, client_email, notes, total_amount, status
         ) VALUES ($1, $2, $3, $4, $5, $6, 'new')
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
 
       // Insert order items
       for (const item of orderItems) {
-        await client.query<OrderItem>(
+        await client.query(
           `INSERT INTO order_items (
             order_id, product_id, quantity, unit_price, subtotal
           ) VALUES ($1, $2, $3, $4, $5)`,
