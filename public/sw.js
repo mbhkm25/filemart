@@ -9,7 +9,7 @@ const IMAGE_CACHE = 'filemart-images-v1'
 // Assets to cache on install
 const STATIC_ASSETS = [
   '/',
-  '/offline',
+  '/offline.html',
 ]
 
 // Install event - cache static assets
@@ -94,7 +94,7 @@ self.addEventListener('fetch', (event) => {
   if (request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       networkFirst(request, STATIC_CACHE).catch(() => {
-        return caches.match('/offline')
+        return caches.match('/offline.html')
       })
     )
     return

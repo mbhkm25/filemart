@@ -86,6 +86,7 @@ export interface OrderItem {
   quantity: number
   unit_price: number
   subtotal: number
+  product_name?: string
   created_at: Date
 }
 
