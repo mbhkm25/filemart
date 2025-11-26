@@ -14,7 +14,7 @@ import StateBox from '@/components/common/StateBox'
 import Skeleton from '@/components/common/Skeleton'
 import { queryOne, query } from '@/lib/db'
 import type { BusinessProfile, Product, GalleryImage } from '@/types/database'
-import type { InstalledPlugin } from '@/types/plugin'
+import type { InstalledPluginInfo } from '@/types/plugin'
 
 interface PageProps {
   params: Promise<{ businessSlug: string }>
@@ -160,7 +160,7 @@ export default async function PublicBusinessProfilePage({
         {/* Plugin Widgets Section */}
         {installedPlugins.length > 0 && (
           <section className="mb-8 md:mb-12 space-y-6">
-            {installedPlugins.map((plugin: InstalledPlugin) => (
+            {installedPlugins.map((plugin: InstalledPluginInfo) => (
               <PluginWidget
                 key={plugin.id}
                 pluginKey={plugin.plugin_key}
