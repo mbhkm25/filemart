@@ -14,6 +14,7 @@ import StateBox from '@/components/common/StateBox'
 import Skeleton from '@/components/common/Skeleton'
 import { useToast } from '@/components/common/Toast'
 import type { Product } from '@/types/database'
+import { useBusiness } from '@/contexts/BusinessContext'
 
 export default function CatalogManagerClient() {
   const router = useRouter()
@@ -22,6 +23,11 @@ export default function CatalogManagerClient() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const businessId = useBusiness()
+
+  if (!businessId) {
+    return null
+  }
 
   useEffect(() => {
     fetchProducts()
@@ -38,7 +44,9 @@ export default function CatalogManagerClient() {
         params.append('search', searchQuery)
       }
 
-      const response = await fetch(`/api/merchant/products?${params.toString()}`)
+      const response = await fetch(
+        `/api/businesses/${businessId}/catalog?${params.toString()}`
+      )
       const data = await response.json()
 
       if (!response.ok || !data.success) {
@@ -65,9 +73,12 @@ export default function CatalogManagerClient() {
 
   const handleDelete = async (productId: string) => {
     try {
-      const response = await fetch(`/api/merchant/products/${productId}`, {
+      const response = await fetch(
+        `/api/businesses/${businessId}/catalog/${productId}`,
+        {
         method: 'DELETE',
-      })
+        }
+      )
 
       const data = await response.json()
 
@@ -86,13 +97,16 @@ export default function CatalogManagerClient() {
   const handleStatusToggle = async (product: Product) => {
     try {
       const newStatus = product.status === 'active' ? 'inactive' : 'active'
-      const response = await fetch(`/api/merchant/products/${product.id}`, {
+      const response = await fetch(
+        `/api/businesses/${businessId}/catalog/${product.id}`,
+        {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ status: newStatus }),
-      })
+        }
+      )
 
       const data = await response.json()
 

@@ -10,6 +10,7 @@ import PluginBox from '@/components/dashboard/PluginBox'
 import StateBox from '@/components/common/StateBox'
 import Skeleton from '@/components/common/Skeleton'
 import { useToast } from '@/components/common/Toast'
+import { useBusiness } from '@/contexts/BusinessContext'
 
 interface Plugin {
   id: string
@@ -32,6 +33,11 @@ export default function PluginsMarketplaceClient() {
   const [availablePlugins, setAvailablePlugins] = useState<Plugin[]>([])
   const [installedPlugins, setInstalledPlugins] = useState<InstalledPlugin[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const businessId = useBusiness()
+
+  if (!businessId) {
+    return null
+  }
 
   useEffect(() => {
     fetchPlugins()
@@ -40,7 +46,7 @@ export default function PluginsMarketplaceClient() {
   const fetchPlugins = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/merchant/plugins')
+      const response = await fetch(`/api/businesses/${businessId}/plugins`)
       const data = await response.json()
 
       if (!response.ok || !data.success) {
@@ -59,7 +65,7 @@ export default function PluginsMarketplaceClient() {
 
   const handleInstall = async (pluginKey: string) => {
     try {
-      const response = await fetch('/api/merchant/plugins', {
+      const response = await fetch(`/api/businesses/${businessId}/plugins`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,9 +89,12 @@ export default function PluginsMarketplaceClient() {
 
   const handleUninstall = async (installationId: string) => {
     try {
-      const response = await fetch(`/api/merchant/plugins/${installationId}`, {
-        method: 'DELETE',
-      })
+      const response = await fetch(
+        `/api/businesses/${businessId}/plugins/${installationId}`,
+        {
+          method: 'DELETE',
+        }
+      )
 
       const data = await response.json()
 
@@ -103,13 +112,16 @@ export default function PluginsMarketplaceClient() {
 
   const handleToggleActive = async (installationId: string, currentActive: boolean) => {
     try {
-      const response = await fetch(`/api/merchant/plugins/${installationId}/settings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ is_active: !currentActive }),
-      })
+      const response = await fetch(
+        `/api/businesses/${businessId}/plugins/${installationId}/settings`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ is_active: !currentActive }),
+        }
+      )
 
       const data = await response.json()
 

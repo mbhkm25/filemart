@@ -11,6 +11,7 @@ import StateBox from '@/components/common/StateBox'
 import Skeleton from '@/components/common/Skeleton'
 import { useToast } from '@/components/common/Toast'
 import { cn } from '@/lib/utils'
+import { useBusiness } from '@/contexts/BusinessContext'
 
 type OrderStatus = 'all' | 'new' | 'processing' | 'completed' | 'cancelled'
 
@@ -44,6 +45,11 @@ export default function OrdersManagerClient() {
     cancelled: 0,
   })
   const [isLoading, setIsLoading] = useState(true)
+  const businessId = useBusiness()
+
+  if (!businessId) {
+    return null
+  }
 
   useEffect(() => {
     fetchOrders()
@@ -60,7 +66,9 @@ export default function OrdersManagerClient() {
         params.append('status', activeTab)
       }
 
-      const response = await fetch(`/api/merchant/orders?${params.toString()}`)
+      const response = await fetch(
+        `/api/businesses/${businessId}/orders?${params.toString()}`
+      )
       const data = await response.json()
 
       if (!response.ok || !data.success) {
@@ -79,13 +87,16 @@ export default function OrdersManagerClient() {
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      const response = await fetch(`/api/merchant/orders/${orderId}/status`, {
+      const response = await fetch(
+        `/api/businesses/${businessId}/orders/${orderId}/status`,
+        {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ status: newStatus }),
-      })
+        }
+      )
 
       const data = await response.json()
 
