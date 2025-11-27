@@ -25,15 +25,9 @@ export default function CatalogManagerClient() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const businessId = useBusiness()
 
-  if (!businessId) {
-    return null
-  }
-
-  useEffect(() => {
-    fetchProducts()
-  }, [statusFilter])
-
   const fetchProducts = async () => {
+    if (!businessId) return
+    
     setIsLoading(true)
     try {
       const params = new URLSearchParams()
@@ -62,13 +56,27 @@ export default function CatalogManagerClient() {
     }
   }
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    // Debounce search
+  useEffect(() => {
+    if (!businessId) return
+    fetchProducts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, businessId])
+
+  useEffect(() => {
+    if (!businessId) return
     const timeout = setTimeout(() => {
       fetchProducts()
     }, 500)
     return () => clearTimeout(timeout)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, businessId])
+
+  if (!businessId) {
+    return null
+  }
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
   }
 
   const handleDelete = async (productId: string) => {

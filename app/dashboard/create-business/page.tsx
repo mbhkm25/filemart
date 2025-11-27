@@ -97,8 +97,8 @@ export default function CreateBusinessPage() {
             onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
             placeholder="سيتم توليده تلقائياً من الاسم"
             disabled={loading}
-            helperText="سيتم استخدامه في رابط الملف التجاري"
           />
+          <p className="text-sm text-gray-500 mt-1">سيتم استخدامه في رابط الملف التجاري</p>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

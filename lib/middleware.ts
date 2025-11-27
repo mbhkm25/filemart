@@ -80,3 +80,51 @@ export function optionalAuth(request: NextRequest): JWTPayload | null {
   return getUserFromRequest(request.headers)
 }
 
+/**
+ * Require user authentication (alias for requireAuth)
+ */
+export function requireUser(request: NextRequest): AuthResult {
+  return requireAuth(request)
+}
+
+/**
+ * Business ownership result type
+ */
+export type BusinessOwnershipResult =
+  | { success: true; business: { id: string; merchant_id: string } }
+  | { success: false; response: NextResponse }
+
+/**
+ * Require business ownership
+ * Verifies that the authenticated user owns the specified business
+ */
+export async function requireBusinessOwnership(
+  request: NextRequest,
+  businessId: string
+): Promise<BusinessOwnershipResult> {
+  const authResult = requireAuth(request)
+  
+  if (!authResult.success) {
+    return authResult
+  }
+
+  // Check if business exists and user owns it
+  const { queryOne } = await import('./db')
+  
+  const business = await queryOne<{ id: string; merchant_id: string }>(
+    `SELECT id, merchant_id FROM business_profiles WHERE id = $1`,
+    [businessId]
+  )
+
+  if (!business) {
+    const { notFound } = await import('./api-response')
+    return { success: false, response: notFound('الملف التجاري غير موجود') }
+  }
+
+  if (business.merchant_id !== authResult.user.userId) {
+    return { success: false, response: forbidden('ليس لديك الصلاحية للوصول إلى هذا المورد') }
+  }
+
+  return { success: true, business }
+}
+

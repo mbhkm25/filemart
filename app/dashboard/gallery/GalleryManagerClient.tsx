@@ -25,13 +25,13 @@ export default function GalleryManagerClient({
 }: GalleryManagerClientProps) {
   const { showToast } = useToast()
   const businessId = useBusiness()
+  const [images, setImages] = useState(initialImages)
+  const [isUploading, setIsUploading] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
 
   if (!businessId) {
     return null
   }
-  const [images, setImages] = useState(initialImages)
-  const [isUploading, setIsUploading] = useState(false)
-  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
 
   const handleUpload = async (url: string) => {
     setIsUploading(true)

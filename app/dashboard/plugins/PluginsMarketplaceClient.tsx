@@ -35,15 +35,8 @@ export default function PluginsMarketplaceClient() {
   const [isLoading, setIsLoading] = useState(true)
   const businessId = useBusiness()
 
-  if (!businessId) {
-    return null
-  }
-
-  useEffect(() => {
-    fetchPlugins()
-  }, [])
-
   const fetchPlugins = async () => {
+    if (!businessId) return
     setIsLoading(true)
     try {
       const response = await fetch(`/api/businesses/${businessId}/plugins`)
@@ -61,6 +54,15 @@ export default function PluginsMarketplaceClient() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  useEffect(() => {
+    if (!businessId) return
+    fetchPlugins()
+  }, [businessId])
+
+  if (!businessId) {
+    return null
   }
 
   const handleInstall = async (pluginKey: string) => {

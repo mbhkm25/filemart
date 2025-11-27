@@ -47,18 +47,8 @@ export default function OrdersManagerClient() {
   const [isLoading, setIsLoading] = useState(true)
   const businessId = useBusiness()
 
-  if (!businessId) {
-    return null
-  }
-
-  useEffect(() => {
-    fetchOrders()
-    // Poll for new orders every 10 seconds
-    const interval = setInterval(fetchOrders, 10000)
-    return () => clearInterval(interval)
-  }, [activeTab])
-
   const fetchOrders = async () => {
+    if (!businessId) return
     setIsLoading(true)
     try {
       const params = new URLSearchParams()
@@ -83,6 +73,18 @@ export default function OrdersManagerClient() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  useEffect(() => {
+    if (!businessId) return
+    fetchOrders()
+    // Poll for new orders every 10 seconds
+    const interval = setInterval(fetchOrders, 10000)
+    return () => clearInterval(interval)
+  }, [activeTab, businessId])
+
+  if (!businessId) {
+    return null
   }
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {

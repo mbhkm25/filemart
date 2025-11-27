@@ -2,23 +2,23 @@
 // BIRM: Navigation and shell for a specific business context
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, use } from 'react'
 import NavbarMobile from '@/components/common/NavbarMobile'
 import NavbarDesktop from '@/components/common/NavbarDesktop'
 import { useBusinessContext } from '@/contexts/BusinessContext'
 
 interface BusinessDashboardLayoutProps {
   children: React.ReactNode
-  params: {
+  params: Promise<{
     businessId: string
-  }
+  }>
 }
 
 export default function BusinessDashboardLayout({
   children,
   params,
 }: BusinessDashboardLayoutProps) {
-  const { businessId } = params
+  const { businessId } = use(params)
   const { currentBusinessId, setCurrentBusinessId } = useBusinessContext()
 
   // Keep BusinessContext in sync with the route param
