@@ -12,6 +12,7 @@ import Modal from '@/components/common/Modal'
 import StateBox from '@/components/common/StateBox'
 import { useToast } from '@/components/common/Toast'
 import type { GalleryImage } from '@/types/database'
+import { useBusiness } from '@/contexts/BusinessContext'
 
 interface GalleryManagerClientProps {
   initialImages: GalleryImage[]
@@ -23,6 +24,11 @@ export default function GalleryManagerClient({
   profileId,
 }: GalleryManagerClientProps) {
   const { showToast } = useToast()
+  const businessId = useBusiness()
+
+  if (!businessId) {
+    return null
+  }
   const [images, setImages] = useState(initialImages)
   const [isUploading, setIsUploading] = useState(false)
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
@@ -31,14 +37,13 @@ export default function GalleryManagerClient({
     setIsUploading(true)
 
     try {
-      const response = await fetch('/api/merchant/gallery', {
+      const response = await fetch(`/api/businesses/${businessId}/gallery`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          profile_id: profileId,
-          image_url: url,
+          url,
         }),
       })
 
@@ -61,9 +66,12 @@ export default function GalleryManagerClient({
 
   const handleDelete = async (imageId: string) => {
     try {
-      const response = await fetch(`/api/merchant/gallery/${imageId}`, {
-        method: 'DELETE',
-      })
+      const response = await fetch(
+        `/api/businesses/${businessId}/gallery/${imageId}`,
+        {
+          method: 'DELETE',
+        }
+      )
 
       const data = await response.json()
 
