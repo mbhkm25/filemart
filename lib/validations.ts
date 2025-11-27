@@ -24,7 +24,7 @@ export type BusinessProfileUpdateInput = z.infer<typeof businessProfileUpdateSch
 
 // Product Validation
 export const productCreateSchema = z.object({
-  name: z.string().min(1, 'اسم المنتج مطلوب').max(255),
+  name: z.string({ required_error: 'اسم المنتج مطلوب' }).min(1, 'اسم المنتج مطلوب').max(255),
   description: z.string().max(2000).optional().nullable(),
   price: z.number().min(0, 'السعر يجب أن يكون أكبر من أو يساوي صفر'),
   images: z.array(z.string().url('رابط الصورة غير صحيح')).max(10, 'الحد الأقصى 10 صور').optional(),

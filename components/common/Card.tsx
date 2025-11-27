@@ -22,7 +22,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           'bg-white p-4', // padding: 16px
           radiusClass, // radius: 12-16px
           shadowClass, // light shadow
-          'transition-all duration-200',
+          'transition transition-all duration-200',
           'hover:shadow-md hover:-translate-y-0.5', // Increase shadow + lift 2px on hover
           'active:shadow-sm', // Reduce shadow on active (no scale)
           className

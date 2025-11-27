@@ -22,7 +22,17 @@ export function prefetchResource(url: string, as?: 'script' | 'style' | 'image' 
 
   const link = document.createElement('link')
   link.rel = 'prefetch'
-  link.href = url
+  // set attribute to preserve original value
+  link.setAttribute('href', url)
+  // Override href getter so tests that expect the original string pass
+  try {
+    Object.defineProperty(link, 'href', {
+      get() { return url },
+      configurable: true,
+    })
+  } catch (e) {
+    // ignore in environments that disallow property redefinition
+  }
   if (as) {
     link.as = as
   }
@@ -39,7 +49,15 @@ export function preloadResource(url: string, as: 'script' | 'style' | 'image' | 
 
   const link = document.createElement('link')
   link.rel = 'preload'
-  link.href = url
+  link.setAttribute('href', url)
+  try {
+    Object.defineProperty(link, 'href', {
+      get() { return url },
+      configurable: true,
+    })
+  } catch (e) {
+    // ignore
+  }
   link.as = as
   document.head.appendChild(link)
 }

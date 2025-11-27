@@ -44,7 +44,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled && 'opacity-40 cursor-not-allowed hover:bg-gray-200 hover:shadow-none active:scale-100'
       ),
       outline: cn(
-        'border-2 border-primary-600 text-primary-600 bg-transparent',
+        'border border-2 border-primary-600 text-primary-600 bg-transparent',
         'hover:bg-primary-50 hover:shadow-sm',
         'active:bg-primary-100 active:scale-[0.98]',
         'focus:ring-primary-500',

@@ -58,7 +58,8 @@ describe('Input Component', () => {
     render(<Input placeholder="Focus test" />)
     const input = screen.getByPlaceholderText('Focus test')
     
-    fireEvent.focus(input)
+    // Use DOM focus directly to ensure jsdom marks the element as active
+    input.focus()
     expect(input).toHaveFocus()
   })
 })
