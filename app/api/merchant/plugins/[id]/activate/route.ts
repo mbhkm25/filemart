@@ -1,31 +1,22 @@
-// Plugin Activation API Route
-// POST /api/merchant/plugins/:id/activate
+ 'use server'
 
-import { NextRequest } from 'next/server'
-import { success, error } from '@/lib/api-response'
-import { requireMerchant } from '@/lib/middleware'
-import { pluginManager } from '@/services/plugin-manager'
+import { NextRequest, NextResponse } from 'next/server'
+import { logDeprecated } from '@/lib/deprecated-logger'
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const authResult = requireMerchant(request)
-    if (!authResult.success) {
-      return authResult.response
-    }
-    const user = authResult.user
-
-    const { id } = await params
-
-    // Activate plugin using plugin manager
-    await pluginManager.activatePlugin(id, user.userId)
-
-    return success(null, 'تم تفعيل الإضافة بنجاح')
-  } catch (err: any) {
-    console.error('Error activating plugin:', err)
-    return error(err.message || 'فشل في تفعيل الإضافة', 500)
-  }
+export async function GET(req: NextRequest) {
+  await logDeprecated(req)
+  return NextResponse.json(
+    {
+      error: 'deprecated',
+      message: 'This endpoint is deprecated. Use /api/businesses/:businessId/* instead.',
+      replacement: 'https://docs.filemart.app/api/business'
+    },
+    { status: 410, headers: { 'X-Deprecation-Warning': 'true' } }
+  )
 }
+
+export const POST = GET
+export const PUT = GET
+export const PATCH = GET
+export const DELETE = GET
 
