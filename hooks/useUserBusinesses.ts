@@ -34,8 +34,12 @@ export function useUserBusinesses(): UseUserBusinessesResult {
         }
 
         const data = await res.json()
-        setBusinesses(data.businesses || [])
-        setError(null)
+        if (data.success && data.data) {
+          setBusinesses(data.data.businesses || [])
+          setError(null)
+        } else {
+          throw new Error(data.error || 'Failed to fetch businesses')
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error')
         setBusinesses([])

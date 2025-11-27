@@ -22,6 +22,16 @@ export const businessProfileUpdateSchema = z.object({
 
 export type BusinessProfileUpdateInput = z.infer<typeof businessProfileUpdateSchema>
 
+// Business Create Validation
+export const businessCreateSchema = z.object({
+  name: z.string().min(2, 'الاسم يجب أن يكون على الأقل حرفين').max(255),
+  description: z.string().max(2000).optional().nullable(),
+  type: z.enum(['store', 'service']),
+  slug: z.string().min(2).max(100).optional(),
+})
+
+export type BusinessCreateInput = z.infer<typeof businessCreateSchema>
+
 // Product Validation
 export const productCreateSchema = z.object({
   name: z.string({ required_error: 'اسم المنتج مطلوب' }).min(1, 'اسم المنتج مطلوب').max(255),
