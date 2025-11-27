@@ -6,6 +6,7 @@ import { cookies } from 'next/headers'
 import { verifyToken } from '@/lib/auth'
 import NavbarMobile from '@/components/common/NavbarMobile'
 import NavbarDesktop from '@/components/common/NavbarDesktop'
+import { BusinessProvider } from '@/contexts/BusinessContext'
 
 const navItems = [
   {
@@ -93,30 +94,32 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block">
-          <NavbarDesktop
-            items={navItems}
-            logo={
-              <div className="text-xl font-bold text-primary-600">FileMart</div>
-            }
-          />
+    <BusinessProvider>
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex">
+          {/* Desktop Sidebar */}
+          <div className="hidden md:block">
+            <NavbarDesktop
+              items={navItems}
+              logo={
+                <div className="text-xl font-bold text-primary-600">FileMart</div>
+              }
+            />
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            <main className="pb-20 md:pb-0">
+              {children}
+            </main>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 min-w-0">
-          <main className="pb-20 md:pb-0">
-            {children}
-          </main>
+        {/* Mobile Bottom Navigation */}
+        <div className="md:hidden">
+          <NavbarMobile items={navItems} />
         </div>
       </div>
-
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden">
-        <NavbarMobile items={navItems} />
-      </div>
-    </div>
+    </BusinessProvider>
   )
 }

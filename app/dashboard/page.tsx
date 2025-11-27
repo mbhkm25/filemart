@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { verifyToken } from '@/lib/auth'
 import BusinessPicker from '@/components/dashboard/BusinessPicker'
-import { BusinessProvider } from '@/contexts/BusinessContext'
 
 export default async function DashboardHomePage() {
   // Check authentication
@@ -22,9 +21,6 @@ export default async function DashboardHomePage() {
   }
 
   // Client-side BusinessPicker will fetch /api/user/businesses and handle CTA / navigation
-  return (
-    <BusinessProvider>
-      <BusinessPicker />
-    </BusinessProvider>
-  )
+  // BusinessProvider is now in app/dashboard/layout.tsx
+  return <BusinessPicker />
 }
