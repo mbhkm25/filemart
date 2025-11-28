@@ -76,10 +76,20 @@ export class PluginSandbox {
   /**
    * Create safe API client for plugin
    */
-  createSafeAPIClient(context: PluginContext) {
+  createSafeAPIClient(context: PluginContext | { merchantId: string; businessId?: string; profileId: string; installationId: string; pluginKey: string; config: any }) {
+    // Ensure businessId is present (use profileId as fallback for backward compatibility)
+    const fullContext: PluginContext = {
+      merchantId: context.merchantId,
+      businessId: (context as any).businessId || context.profileId,
+      profileId: context.profileId,
+      installationId: context.installationId,
+      pluginKey: context.pluginKey,
+      config: context.config,
+    }
+    
     return {
       get: async (url: string) => {
-        if (!this.validatePluginAccess(url, context)) {
+        if (!this.validatePluginAccess(url, fullContext)) {
           throw new Error(`Plugin not allowed to access: ${url}`)
         }
         // In production, this would make actual API calls
@@ -87,7 +97,7 @@ export class PluginSandbox {
         return fetch(url).then((res) => res.json())
       },
       post: async (url: string, data: any) => {
-        if (!this.validatePluginAccess(url, context)) {
+        if (!this.validatePluginAccess(url, fullContext)) {
           throw new Error(`Plugin not allowed to access: ${url}`)
         }
         return fetch(url, {
@@ -97,7 +107,7 @@ export class PluginSandbox {
         }).then((res) => res.json())
       },
       put: async (url: string, data: any) => {
-        if (!this.validatePluginAccess(url, context)) {
+        if (!this.validatePluginAccess(url, fullContext)) {
           throw new Error(`Plugin not allowed to access: ${url}`)
         }
         return fetch(url, {
@@ -107,7 +117,7 @@ export class PluginSandbox {
         }).then((res) => res.json())
       },
       delete: async (url: string) => {
-        if (!this.validatePluginAccess(url, context)) {
+        if (!this.validatePluginAccess(url, fullContext)) {
           throw new Error(`Plugin not allowed to access: ${url}`)
         }
         return fetch(url, {

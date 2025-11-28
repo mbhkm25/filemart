@@ -22,11 +22,11 @@ export class PluginLoader {
   /**
    * Load public widget component
    * Used in public profile pages
+   * BIRM: Now uses businessId instead of merchantId + profileId
    */
   async loadPublicWidget(
     pluginKey: string,
-    merchantId: string,
-    profileId: string,
+    businessId: string,
     installationId: string
   ): Promise<PluginLoadResult> {
     try {
@@ -58,11 +58,13 @@ export class PluginLoader {
         throw new Error(`Plugin ${pluginKey} does not have a public widget`)
       }
 
-      // 4. Get installation and settings
-      const installed = await queryOne<InstalledPlugin>(
-        `SELECT * FROM installed_plugins 
-         WHERE id = $1 AND merchant_id = $2 AND is_active = true`,
-        [installationId, merchantId]
+      // 4. Get installation and settings - verify it belongs to business
+      const installed = await queryOne<InstalledPlugin & { merchant_id: string }>(
+        `SELECT ip.*, bp.merchant_id
+         FROM installed_plugins ip
+         JOIN business_profiles bp ON ip.business_id = bp.id
+         WHERE ip.id = $1 AND ip.business_id = $2 AND ip.is_active = true`,
+        [installationId, businessId]
       )
 
       if (!installed) {
@@ -79,14 +81,16 @@ export class PluginLoader {
 
       // 5. Create context
       const context: PluginContext = {
-        merchantId,
-        profileId,
+        merchantId: installed.merchant_id,
+        businessId,
+        profileId: businessId,
         installationId,
         pluginKey,
         config,
         api: pluginSandbox.createSafeAPIClient({
-          merchantId,
-          profileId,
+          merchantId: installed.merchant_id,
+          businessId,
+          profileId: businessId,
           installationId,
           pluginKey,
           config,
@@ -160,10 +164,12 @@ export class PluginLoader {
         throw new Error(`Plugin ${pluginKey} does not have dashboard settings`)
       }
 
-      // 4. Get installation and settings
-      const installed = await queryOne<InstalledPlugin>(
-        `SELECT * FROM installed_plugins 
-         WHERE id = $1 AND merchant_id = $2`,
+      // 4. Get installation and settings - use business_id if available, fallback to merchant_id
+      const installed = await queryOne<InstalledPlugin & { merchant_id: string }>(
+        `SELECT ip.*, COALESCE(ip.business_id, bp.id) as business_id, bp.merchant_id
+         FROM installed_plugins ip
+         LEFT JOIN business_profiles bp ON ip.merchant_id = bp.merchant_id
+         WHERE ip.id = $1 AND ip.merchant_id = $2`,
         [installationId, merchantId]
       )
 
@@ -178,17 +184,20 @@ export class PluginLoader {
       )
 
       const config = (settings?.settings_json as PluginConfig) || {}
+      const businessId = (installed as any).business_id || profileId
 
       // 5. Create context
       const context: PluginContext = {
         merchantId,
-        profileId,
+        businessId,
+        profileId: businessId,
         installationId,
         pluginKey,
         config,
         api: pluginSandbox.createSafeAPIClient({
           merchantId,
-          profileId,
+          businessId,
+          profileId: businessId,
           installationId,
           pluginKey,
           config,

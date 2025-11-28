@@ -62,6 +62,7 @@ export interface PluginConfig {
  */
 export interface PluginContext {
   merchantId: string
+  businessId: string // BIRM: business-scoped context
   profileId: string
   installationId: string
   pluginKey: string
@@ -117,6 +118,7 @@ export interface PluginRegistryEntry {
 export interface InstalledPluginInfo {
   id: string
   merchantId: string
+  businessId: string // BIRM: business-scoped installation
   pluginId: string
   pluginKey: string
   isActive: boolean
