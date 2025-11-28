@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "migrate:birm-data": "tsx scripts/migrations/migrate-birm-data.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.8.0",

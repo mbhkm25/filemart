@@ -22,11 +22,21 @@ export async function logDeprecated(req: NextRequest | Request) {
     const ua = headers?.get?.('user-agent') || null
 
     if (process.env.DATABASE_URL) {
+      // Extract user_id from request if available (from JWT token)
+      let userId: string | null = null
+      try {
+        const authHeader = headers?.get?.('authorization') || headers?.get?.('cookie')
+        // Try to extract from token if available (simplified - actual implementation may vary)
+        // For now, we'll leave it null and populate via middleware if needed
+      } catch (e) {
+        // ignore
+      }
+
       // Fire-and-forget, don't block or throw build-time errors
       query(
-        `INSERT INTO deprecated_api_hits (path, method, ip_address, user_agent, created_at)
-         VALUES ($1, $2, $3, $4, NOW())`,
-        [path, method, ip, ua]
+        `INSERT INTO deprecated_api_hits (route, method, user_id, created_at)
+         VALUES ($1, $2, $3, NOW())`,
+        [path, method, userId]
       ).catch(() => {
         // swallow errors
       })
