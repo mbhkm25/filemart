@@ -91,7 +91,7 @@ export function requireUser(request: NextRequest): AuthResult {
  * Business ownership result type
  */
 export type BusinessOwnershipResult =
-  | { success: true; business: { id: string; merchant_id: string } }
+  | { success: true; user: JWTPayload; business: { id: string; merchant_id: string } }
   | { success: false; response: NextResponse }
 
 /**
@@ -105,7 +105,7 @@ export async function requireBusinessOwnership(
   const authResult = requireAuth(request)
   
   if (!authResult.success) {
-    return authResult
+    return { success: false, response: authResult.response }
   }
 
   // Check if business exists and user owns it
@@ -125,6 +125,6 @@ export async function requireBusinessOwnership(
     return { success: false, response: forbidden('ليس لديك الصلاحية للوصول إلى هذا المورد') }
   }
 
-  return { success: true, business }
+  return { success: true, user: authResult.user, business }
 }
 

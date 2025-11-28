@@ -16,41 +16,39 @@ export async function GET(
   try {
     const { id } = await params
     const searchParams = request.nextUrl.searchParams
-    const merchantId = searchParams.get('merchantId')
-    const profileId = searchParams.get('profileId')
+    const businessId = searchParams.get('businessId') || searchParams.get('profileId') // Support both for backward compatibility
 
-    if (!merchantId || !profileId) {
-      return error('merchantId and profileId are required', 400)
+    if (!businessId) {
+      return error('businessId query parameter is required', 400)
     }
 
-    // Get installation
+    // Get installation - verify it belongs to this business
     const installed = await queryOne<InstalledPlugin & { plugin_key: string }>(
       `SELECT ip.*, p.plugin_key
        FROM installed_plugins ip
        JOIN plugins p ON ip.plugin_id = p.id
-       WHERE ip.id = $1 AND ip.merchant_id = $2 AND ip.is_active = true`,
-      [id, merchantId]
+       WHERE ip.id = $1 AND ip.business_id = $2 AND ip.is_active = true`,
+      [id, businessId]
     )
 
     if (!installed) {
       return error('Plugin installation not found or inactive', 404)
     }
 
-    // Verify profile belongs to merchant
+    // Verify business profile exists
     const profile = await queryOne<BusinessProfile>(
-      `SELECT id FROM business_profiles WHERE id = $1 AND merchant_id = $2`,
-      [profileId, merchantId]
+      `SELECT id, merchant_id FROM business_profiles WHERE id = $1`,
+      [businessId]
     )
 
     if (!profile) {
-      return error('Profile not found', 404)
+      return error('Business profile not found', 404)
     }
 
-    // Load widget using plugin loader
+    // Load widget using plugin loader with businessId
     const result = await pluginLoader.loadPublicWidget(
       installed.plugin_key,
-      merchantId,
-      profileId,
+      businessId,
       id
     )
 
