@@ -125,6 +125,7 @@ export interface Plugin {
 export interface InstalledPlugin {
   id: string
   merchant_id: string
+  business_id: string | null // BIRM: business-scoped installation
   plugin_id: string
   is_active: boolean
   installed_version: string
